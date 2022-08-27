@@ -45,8 +45,8 @@ import { list } from 'postcss';
     <li>Stage 1: Your brain begins to slow down and you enter light sleep. (5%)</li>
     <li> Stage 2: Deeper sleep begins. You are less likely to be awakened as your heart rate and temperature drop. (45%)</li>
     <li>Stage 3: This is the deepest stage of sleep and the most difficult to wake from. At this point your body begins to repair. This stage is needed for a good night's sleep. 
-      Being awoken during this stage leads to mental fogginess. </li>
+      Being awoken during this stage leads to mental fogginess. (25%)</li>
     <li>Stage 4: Dreaming starts at this stage. It is generally not considered a restful sleep stage. If you are awakened at this point you will also feel severely tired.</li>
-    <p>Typically within one night you will repeat this cycle 4 to 6 times.</p>
+    <p>Typically within one night you will repeat this cycle 4 to 6 times. (25%)</p>
   </ul>
 </div>
