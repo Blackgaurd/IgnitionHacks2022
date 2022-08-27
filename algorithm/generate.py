@@ -3,6 +3,7 @@
 import math
 import random
 from typing import List, Tuple
+import json
 
 
 from constants import sleep_time
@@ -14,7 +15,7 @@ def generate_data(age: int, cycle_mins: int, noise: float, num_samples: int) -> 
     max_sleep *= 60
 
     samples = []
-    func = lambda x: round(5 * math.sin(2 * math.pi / cycle_mins * x) + 5)
+    func = lambda x: round(5 * math.cos(2 * math.pi / cycle_mins * x) + 5)
     for i in range(num_samples):
         # x = sleep minutes
         # y = sleep comfort rating/level (1-10)
@@ -25,3 +26,8 @@ def generate_data(age: int, cycle_mins: int, noise: float, num_samples: int) -> 
         samples.append((x, y))
 
     return samples
+
+samples = generate_data(age=68, cycle_mins=99, noise=0.9, num_samples=3)
+with open("data.txt", "w") as f:
+    for x, y in samples:
+        f.write(f"{x} {y}\n")
