@@ -15,8 +15,8 @@
   let userData: object;
   let cycleLength: number;
   let userAge: number;
-  let inputedTime = '12:00';
-  let meridiem = 'am';
+  let inputedTime = '10:00';
+  let meridiem = 'pm';
 
   let dropdownId = 'sleep';
 
@@ -30,7 +30,7 @@
     cycleLength = tmp !== null ? parseInt(tmp) : 90;
 
     tmp = window.localStorage.getItem('userAge');
-    userAge = tmp !== null ? parseInt(tmp) : 0;
+    userAge = tmp !== null ? parseInt(tmp) : 1;
   });
 
   function optimalSleepMinutes(age: number) {
