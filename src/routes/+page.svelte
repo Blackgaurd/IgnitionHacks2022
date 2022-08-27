@@ -58,7 +58,7 @@
 
     <div>
       <h1><u>Stages of Sleep Cycle</u></h1>
-      <ul class="text-xl leading-loose">
+      <ul class="text-xl leading-loose space-y-2">
         <li>
           Stage 1: Your brain begins to slow down and you enter light sleep.
           (5%)
@@ -76,15 +76,10 @@
         <li>
           Stage 4: Dreaming starts at this stage. It is generally not considered
           a restful sleep stage. If you are awakened at this point you will also
-          feel severely tired.
+          feel severely tired. Typically within one night you will repeat this
+          cycle 4 to 6 times. (25%)
         </li>
       </ul>
-      <p class="mt-3">
-        <i>
-          Typically within one night you will repeat this cycle 4 to 6 times.
-          (25%)
-        </i>
-      </p>
     </div>
   </div>
 </div>
