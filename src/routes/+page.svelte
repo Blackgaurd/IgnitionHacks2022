@@ -1,6 +1,8 @@
 <script lang="ts">
   import 'carbon-components-svelte/css/all.css';
   import {Theme} from 'carbon-components-svelte';
+  import {cycleLength, userData} from './stores';
+  import {MIN_DATA_LENGTH} from './algorithm';
 
   import Calculator from './Calculator.svelte';
 </script>
@@ -54,6 +56,21 @@
         which last a total of around 90 to 120 minutes. Your level of fatigue
         depends on when you wake up within this cycle. The best time to feel
         energetic is to wake up at the end of each cycle.
+      </p>
+      <p class="text-xl leading-loose">
+        {#if $userData.length < MIN_DATA_LENGTH}
+          (Your sleep cycle length is defaulted to <span class="font-extrabold"
+            >90</span
+          >
+          minutes because you do not have enough sleep data. Get
+          <span class="font-extrabold"
+            >{MIN_DATA_LENGTH - $userData.length}</span
+          > more samples to get a more accurate result.)
+        {:else}
+          (Your predicted sleep cycle is <span class="font-extrabold"
+            >{$cycleLength}</span
+          > minutes.)
+        {/if}
       </p>
     </div>
 

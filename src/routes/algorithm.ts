@@ -3,7 +3,7 @@ export type sleepData = {
     rating: number;
 }
 
-const MIN_DATA_LENGTH = 10;
+export const MIN_DATA_LENGTH = 10;
 const DEFAULT_CYCLE_LENGTH = 90;
 const MIN_CYCLE_LENGTH = 85;
 const MAX_CYCLE_LENGTH = 115;
