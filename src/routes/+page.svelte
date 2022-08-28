@@ -4,7 +4,7 @@
   import {Theme} from 'carbon-components-svelte';
   import 'carbon-components-svelte/css/all.css';
 </script>
-
+<title>YourSleep</title>
 <div class="absolute">
   <div class="relative left-3">
     <Theme
@@ -47,7 +47,9 @@
       <p class="text-xl leading-loose">
         Have you ever noticed how sometimes you wake up feeling refreshed even
         when you sleep much less than usual? Or sometimes you feel tired even
-        after sleeping more than usual? This is because of sleep cycles. In
+        after sleeping more than usual? This is because of sleep cycles.</p>
+        <p class="text-xl leading-loose"> 
+          In
         short, while you sleep, your brain goes through 4 stages of sleep which
         last a total of around 90 to 120 minutes. Your level of fatigue depends
         on when you wake up within this cycle. The best time to feel energetic
