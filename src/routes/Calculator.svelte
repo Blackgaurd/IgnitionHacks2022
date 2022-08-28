@@ -1,4 +1,7 @@
 <script lang="ts">
+  let loadCss = () => import('carbon-components-svelte/css/all.css');
+
+  $: loadCssPromise = loadCss();
   import {
     Dropdown,
     TimePicker,
@@ -8,7 +11,6 @@
     NumberInput,
     Slider
   } from 'carbon-components-svelte';
-  import 'carbon-components-svelte/css/all.css';
 
   import {
     userAge,
@@ -17,6 +19,7 @@
     userData,
     recommendedTimes
   } from './stores';
+
   import {findCycleLength} from './algorithm';
   import {get} from 'svelte/store';
 
@@ -173,116 +176,120 @@
     <!--come up with a better name-->
     <h1 class="my-5">Sleep Calculator</h1>
 
-    {#if !$recommendedTimes.length}
-      <!--form-->
-      <div class="my-3">
-        <NumberInput
-          min={1}
-          max={120}
-          invalidText="Number must be between 1 and 120."
-          label="Age"
-          bind:value={$userAge}
-        />
-      </div>
-
-      <div class="flex flex-row space-x-3">
-        <!--todo: set fixed width-->
-        <div>
-          <Dropdown
-            bind:selectedId={$dropdownId}
-            items={[
-              {id: 'sleep', text: 'I want to sleep at...'},
-              {id: 'wake up', text: 'I want to wake up at...'}
-            ]}
+    {#await loadCssPromise}
+      <h1>Loading styles...</h1>
+    {:then}
+      {#if !$recommendedTimes.length}
+        <!--form-->
+        <div class="my-3">
+          <NumberInput
+            min={1}
+            max={120}
+            invalidText="Number must be between 1 and 120."
+            label="Age"
+            bind:value={$userAge}
           />
         </div>
 
-        <div>
-          <!---todo: check for valid time input-->
-          <TimePicker
-            class="w-full"
-            hideLabel
-            placeholder="hh:mm"
-            invalidText="Time must be in the format hh:mm."
-            bind:value={inputedTime1}
-          >
-            <TimePickerSelect bind:value={meridiem1}>
-              <SelectItem value="am" text="AM" />
-              <SelectItem value="pm" text="PM" />
-            </TimePickerSelect>
-          </TimePicker>
-        </div>
-      </div>
-
-      <div class="my-3">
-        {#if disabledButton}
-          <Button kind="secondary" disabled>Calculate</Button>
-          <!---change text to red and a bit faded-->
-          <p>Please complete the form to continue.</p>
-        {:else}
-          <Button kind="secondary" on:click={calculate}>Calculate</Button>
-        {/if}
-        <!--disabledButton-->
-      </div>
-    {:else}
-      <div class="space-y-4">
-        <p>If you want to {$dropdownId} at {inputedTime1}{meridiem1},</p>
-
-        <div>
-          {#if $dropdownId === 'wake up'}
-            <p>You should sleep at...</p>
-          {:else}
-            <p>You should wake up at...</p>
-          {/if}
+        <div class="flex flex-row space-x-3">
+          <!--todo: set fixed width-->
           <div>
-            {#each $recommendedTimes as result}
-              <p>{result}</p>
-            {/each}
+            <Dropdown
+              bind:selectedId={$dropdownId}
+              items={[
+                {id: 'sleep', text: 'I want to sleep at...'},
+                {id: 'wake up', text: 'I want to wake up at...'}
+              ]}
+            />
+          </div>
+
+          <div>
+            <!---todo: check for valid time input-->
+            <TimePicker
+              class="w-full"
+              hideLabel
+              placeholder="hh:mm"
+              invalidText="Time must be in the format hh:mm."
+              bind:value={inputedTime1}
+            >
+              <TimePickerSelect bind:value={meridiem1}>
+                <SelectItem value="am" text="AM" />
+                <SelectItem value="pm" text="PM" />
+              </TimePickerSelect>
+            </TimePicker>
           </div>
         </div>
 
-        <div>
-          {#if $dropdownId === 'wake up'}
-            <p>When did you sleep?</p>
+        <div class="my-3">
+          {#if disabledButton}
+            <Button kind="secondary" disabled>Calculate</Button>
+            <!---change text to red and a bit faded-->
+            <p>Please complete the form to continue.</p>
           {:else}
-            <p>When did you wake up?</p>
+            <Button kind="secondary" on:click={calculate}>Calculate</Button>
           {/if}
-          <TimePicker
-            class="w-full"
-            hideLabel
-            placeholder="hh:mm"
-            invalidText="Time must be in the format hh:mm."
-            bind:value={inputedTime2}
-          >
-            <TimePickerSelect bind:value={meridiem2}>
-              <SelectItem value="am" text="AM" />
-              <SelectItem value="pm" text="PM" />
-            </TimePickerSelect>
-          </TimePicker>
+          <!--disabledButton-->
         </div>
-        <div>
-          <p>How well did you sleep?</p>
-          <Slider
-            minLabel="😭"
-            maxLabel="😃"
-            min={1}
-            max={10}
-            hideTextInput
-            label="How did you sleep?"
-            bind:value={rating}
-          />
-        </div>
+      {:else}
+        <div class="space-y-4">
+          <p>If you want to {$dropdownId} at {inputedTime1}{meridiem1},</p>
 
-        <div class="space-x-4">
-          <Button
-            kind="tertiary"
-            on:click={() => {
-              recommendedTimes.set([]);
-            }}>Go Back</Button
-          >
-          <Button kind="secondary" on:click={submitRating}>Submit</Button>
+          <div>
+            {#if $dropdownId === 'wake up'}
+              <p>You should sleep at...</p>
+            {:else}
+              <p>You should wake up at...</p>
+            {/if}
+            <div>
+              {#each $recommendedTimes as result}
+                <p>{result}</p>
+              {/each}
+            </div>
+          </div>
+
+          <div>
+            {#if $dropdownId === 'wake up'}
+              <p>When did you sleep?</p>
+            {:else}
+              <p>When did you wake up?</p>
+            {/if}
+            <TimePicker
+              class="w-full"
+              hideLabel
+              placeholder="hh:mm"
+              invalidText="Time must be in the format hh:mm."
+              bind:value={inputedTime2}
+            >
+              <TimePickerSelect bind:value={meridiem2}>
+                <SelectItem value="am" text="AM" />
+                <SelectItem value="pm" text="PM" />
+              </TimePickerSelect>
+            </TimePicker>
+          </div>
+          <div>
+            <p>How well did you sleep?</p>
+            <Slider
+              minLabel="😭"
+              maxLabel="😃"
+              min={1}
+              max={10}
+              hideTextInput
+              label="How did you sleep?"
+              bind:value={rating}
+            />
+          </div>
+
+          <div class="space-x-4">
+            <Button
+              kind="tertiary"
+              on:click={() => {
+                recommendedTimes.set([]);
+              }}>Go Back</Button
+            >
+            <Button kind="secondary" on:click={submitRating}>Submit</Button>
+          </div>
         </div>
-      </div>
-    {/if}
+      {/if}
+    {/await}
   </div>
 </div>

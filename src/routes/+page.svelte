@@ -1,8 +1,8 @@
 <script lang="ts">
-  import Calculator from './Calculator.svelte';
-
-  import {Theme} from 'carbon-components-svelte';
   import 'carbon-components-svelte/css/all.css';
+  import {Theme} from 'carbon-components-svelte';
+
+  import Calculator from './Calculator.svelte';
 </script>
 
 <div class="absolute">
