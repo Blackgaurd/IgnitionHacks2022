@@ -6,6 +6,3 @@ export const userData = writable("userData", [] as sleepData[])
 export const cycleLength = writable("cycleLength", 90)
 export const dropdownId = writable("dropdownId", "sleep")
 export const recommendedTimes = writable("recommendedTimes", [] as string[])
-//export const enteredRating = writable("enteredRating", true)
-
-export const carbonTheme = writable("__carbon-theme", "g10")
