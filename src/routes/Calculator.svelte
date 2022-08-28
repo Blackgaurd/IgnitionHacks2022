@@ -5,123 +5,166 @@
     TimePickerSelect,
     SelectItem,
     Button,
-    NumberInput
+    NumberInput,
+    Slider
   } from 'carbon-components-svelte';
   import 'carbon-components-svelte/css/all.css';
 
-  import {onMount} from 'svelte';
-  import {writable} from 'svelte/store';
+  import {
+    userAge,
+    cycleLength,
+    dropdownId,
+    userData,
+    recommendedTimes
+  } from './stores';
+  import {findCycleLength} from './algorithm';
+  import {get} from 'svelte/store';
 
-  let userData: object;
-  let cycleLength: number;
-  let userAge: number;
-  let inputedTime = '12:00';
-  let meridiem = 'am';
+  let inputedTime1 = '12:00';
+  let meridiem1 = 'am';
 
-  let dropdownId = 'sleep';
-
-  onMount(() => {
-    let tmp: string | null;
-
-    tmp = window.localStorage.getItem('userData');
-    userData = tmp !== null ? JSON.parse(tmp) : {};
-
-    tmp = window.localStorage.getItem('cycleLength');
-    cycleLength = tmp !== null ? parseInt(tmp) : 90;
-
-    tmp = window.localStorage.getItem('userAge');
-    userAge = tmp !== null ? parseInt(tmp) : 0;
-  });
+  let inputedTime2 = '12:00';
+  let meridiem2 = 'am';
 
   function optimalSleepMinutes(age: number) {
-    let ret = {
-      min: 0,
-      max: 0
-    };
+    let min, max;
     if (age < 1) {
-      ret.min = 12;
-      ret.max = 16;
+      min = 12;
+      max = 16;
     } else if (age < 2) {
-      ret.min = 11;
-      ret.max = 14;
+      min = 11;
+      max = 14;
     } else if (age < 5) {
-      ret.min = 10;
-      ret.max = 13;
+      min = 10;
+      max = 13;
     } else if (age < 12) {
-      ret.min = 9;
-      ret.max = 12;
+      min = 9;
+      max = 12;
     } else if (age < 18) {
-      ret.min = 9;
-      ret.max = 10;
+      min = 9;
+      max = 10;
     } else if (age < 64) {
-      ret.min = 7;
-      ret.max = 9;
+      min = 7;
+      max = 9;
     } else {
-      ret.min = 7;
-      ret.max = 8;
+      min = 7;
+      max = 8;
     }
     return {
-      min: ret.min * 60,
-      max: ret.max * 60
+      min: min * 60,
+      max: max * 60
     };
   }
 
-  $: disabledButton = !inputedTime || userAge === 0;
+  $: disabledButton = !inputedTime1 || $userAge === 0;
 
   function wakeUpTime(sleepTime: Date) {
-    let mintues = optimalSleepMinutes(userAge);
+    let mintues = optimalSleepMinutes(get(userAge));
     let numCycles = {
-      min: Math.ceil(mintues.min / cycleLength),
-      max: Math.ceil(mintues.max / cycleLength)
+      min: Math.ceil(mintues.min / get(cycleLength)),
+      max: Math.ceil(mintues.max / get(cycleLength))
     };
 
     let ret = [];
     for (let cycles = numCycles.min; cycles <= numCycles.max; cycles++) {
       let time = new Date(sleepTime.getTime());
-      time.setMinutes(time.getMinutes() + cycles * cycleLength);
+      time.setMinutes(time.getMinutes() + cycles * get(cycleLength));
       ret.push(time);
     }
     return ret;
   }
 
   function sleepTime(wakeUpTime: Date) {
-    let mintues = optimalSleepMinutes(userAge);
+    let mintues = optimalSleepMinutes(get(userAge));
     let numCycles = {
-      min: Math.ceil(mintues.min / cycleLength),
-      max: Math.ceil(mintues.max / cycleLength)
+      min: Math.ceil(mintues.min / get(cycleLength)),
+      max: Math.ceil(mintues.max / get(cycleLength))
     };
 
     let ret = [];
     for (let cycles = numCycles.min; cycles <= numCycles.max; cycles++) {
       let time = new Date(wakeUpTime.getTime());
-      time.setMinutes(time.getMinutes() - cycles * cycleLength);
+      time.setMinutes(time.getMinutes() - cycles * get(cycleLength));
       ret.push(time);
     }
     return ret;
   }
 
-  let results: Array<Date> | null = null;
+  function updateUserData(minutesSlept: number, rating: number) {
+    userData.set([
+      {
+        minutes: minutesSlept,
+        rating: rating
+      },
+      ...get(userData)
+    ]);
+    userAge.set(findCycleLength(get(userData)));
+  }
+
   function calculate() {
-    let [hour, minute] = inputedTime.split(':').map(x => parseInt(x));
+    let [hour, minute] = inputedTime1.split(':').map(x => parseInt(x));
     if (hour === 12) {
       hour = 0;
     }
-    if (meridiem === 'pm') {
+    if (meridiem1 === 'pm') {
       hour += 12;
     }
-    if (dropdownId === 'sleep') {
+    if (get(dropdownId) === 'sleep') {
       let sleepTime = new Date();
       sleepTime.setHours(hour);
       sleepTime.setMinutes(minute);
 
-      results = wakeUpTime(sleepTime);
+      recommendedTimes.set(
+        wakeUpTime(sleepTime).map(x => {
+          return x.toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: true
+          });
+        })
+      );
     } else {
       let wakeUpTime = new Date();
       wakeUpTime.setHours(hour);
       wakeUpTime.setMinutes(minute);
 
-      results = sleepTime(wakeUpTime);
+      recommendedTimes.set(
+        sleepTime(wakeUpTime).map(x => {
+          return x.toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: true
+          });
+        })
+      );
     }
+  }
+
+  let rating: number;
+  function submitRating() {
+    function getDate(inputedTime: string, meridiem: string) {
+      let [hour, minute] = inputedTime.split(':').map(x => parseInt(x));
+      if (hour === 12) {
+        hour = 0;
+      }
+      if (meridiem === 'pm') {
+        hour += 12;
+      }
+      let time = new Date();
+      time.setHours(hour);
+      time.setMinutes(minute);
+      return time;
+    }
+
+    let sleepTime = getDate(inputedTime1, meridiem1);
+    let wakeUpTime = getDate(inputedTime2, meridiem2);
+    wakeUpTime.setDate(sleepTime.getDate() + 1);
+    console.log(sleepTime, wakeUpTime);
+
+    let minutesSlept = (wakeUpTime.getTime() - sleepTime.getTime()) / 60000;
+    updateUserData(minutesSlept, rating);
+
+    recommendedTimes.set([]);
   }
 </script>
 
@@ -130,79 +173,110 @@
     <!--come up with a better name-->
     <h1 class="my-5">Sleep Calculator</h1>
 
-    <div class="my-3">
-      <NumberInput
-        min={1}
-        max={120}
-        invalidText="Number must be between 1 and 120."
-        label="Age"
-        bind:value={userAge}
-      />
-    </div>
-
-    <div class="flex flex-row space-x-3">
-      <!--todo: set fixed width-->
-      <div>
-        <Dropdown
-          bind:selectedId={dropdownId}
-          items={[
-            {id: 'sleep', text: 'I want to sleep at...'},
-            {id: 'wake', text: 'I want to wake up at...'}
-          ]}
+    {#if !$recommendedTimes.length}
+      <!--form-->
+      <div class="my-3">
+        <NumberInput
+          min={1}
+          max={120}
+          invalidText="Number must be between 1 and 120."
+          label="Age"
+          bind:value={$userAge}
         />
       </div>
 
-      <div>
-        <!---todo: check for valid time input-->
-        <TimePicker
-          class="w-full"
-          hideLabel
-          placeholder="hh:mm"
-          invalidText="Time must be in the format hh:mm."
-          bind:value={inputedTime}
-        >
-          <TimePickerSelect bind:value={meridiem}>
-            <SelectItem value="am" text="AM" />
-            <SelectItem value="pm" text="PM" />
-          </TimePickerSelect>
-        </TimePicker>
+      <div class="flex flex-row space-x-3">
+        <!--todo: set fixed width-->
+        <div>
+          <Dropdown
+            bind:selectedId={$dropdownId}
+            items={[
+              {id: 'sleep', text: 'I want to sleep at...'},
+              {id: 'wake up', text: 'I want to wake up at...'}
+            ]}
+          />
+        </div>
+
+        <div>
+          <!---todo: check for valid time input-->
+          <TimePicker
+            class="w-full"
+            hideLabel
+            placeholder="hh:mm"
+            invalidText="Time must be in the format hh:mm."
+            bind:value={inputedTime1}
+          >
+            <TimePickerSelect bind:value={meridiem1}>
+              <SelectItem value="am" text="AM" />
+              <SelectItem value="pm" text="PM" />
+            </TimePickerSelect>
+          </TimePicker>
+        </div>
       </div>
-    </div>
 
-    <div class="my-3">
-      {#if disabledButton}
-        <Button kind="secondary" disabled on:hover>Calculate</Button>
-        <!---change text to red and a bit faded-->
-        <p>Please complete the form to continue.</p>
-      {:else}
-        <Button
-          kind="secondary"
-          on:click={() => {
-            calculate();
-          }}>Calculate</Button
-        >
-      {/if}
-    </div>
-
-    {#if results !== null}
       <div class="my-3">
-        {#if dropdownId === 'wake'}
+        {#if disabledButton}
+          <Button kind="secondary" disabled>Calculate</Button>
+          <!---change text to red and a bit faded-->
+          <p>Please complete the form to continue.</p>
+        {:else}
+          <Button kind="secondary" on:click={calculate}>Calculate</Button>
+        {/if}
+        <!--disabledButton-->
+      </div>
+    {:else}
+      <p>If you want to {$dropdownId} at {inputedTime1}{meridiem1}:</p>
+
+      <div class="my-3">
+        {#if $dropdownId === 'wake up'}
           <h3>You should sleep at...</h3>
         {:else}
           <h3>You should wake up at...</h3>
         {/if}
         <div>
-          {#each results as result}
-            <p>
-              {result.toLocaleString('en-US', {
-                hour: 'numeric',
-                minute: 'numeric',
-                hour12: true
-              })}
-            </p>
+          {#each $recommendedTimes as result}
+            <p>{result}</p>
           {/each}
         </div>
       </div>
+
+      {#if $dropdownId === 'wake up'}
+        <p>When did you sleep?</p>
+      {:else}
+        <p>When did you wake up?</p>
+      {/if}
+      <TimePicker
+        class="w-full"
+        hideLabel
+        placeholder="hh:mm"
+        invalidText="Time must be in the format hh:mm."
+        bind:value={inputedTime2}
+      >
+        <TimePickerSelect bind:value={meridiem2}>
+          <SelectItem value="am" text="AM" />
+          <SelectItem value="pm" text="PM" />
+        </TimePickerSelect>
+      </TimePicker>
+
+      <p>How well did you sleep?</p>
+      <Slider
+        minLabel="😭"
+        maxLabel="😃"
+        min={1}
+        max={10}
+        hideTextInput
+        label="How did you sleep?"
+        bind:value={rating}
+      />
+      <p>{rating}</p>
+
+      <Button
+        kind="tertiary"
+        on:click={() => {
+          recommendedTimes.set([]);
+        }}>go back</Button
+      >
+      <Button kind="secondary" on:click={submitRating}>Submit</Button>
     {/if}
   </div>
 </div>

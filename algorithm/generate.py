@@ -27,7 +27,7 @@ def generate_data(age: int, cycle_mins: int, noise: float, num_samples: int) -> 
 
     return samples
 
-samples = generate_data(age=68, cycle_mins=99, noise=0.9, num_samples=3)
+samples = generate_data(age=14, cycle_mins=110, noise=0.2, num_samples=1000)
 with open("data.txt", "w") as f:
     for x, y in samples:
         f.write(f"{x} {y}\n")
